@@ -1,6 +1,12 @@
 from Brain import Brain
 import tkinter as tk
 
+#ML methods - - - - - - - - - - - - - - -
+normalizePoints = Brain.normalizePoints
+genNormalMatrix = Brain.genNormalMatrix
+visualizeMatrix = Brain.visualizeMatrix
+# - - - - - - - - - - - - - - - - - - - -
+
 class DrawingPad:
     def __init__(self,app):
         self.drawSize = 10              # Size of the drawn dot
@@ -28,7 +34,6 @@ class DrawingPad:
 
     #Method for clearing the canvas
     def clear_canvas(self, event):
-        Brain.normalizePoints(self.canvasDrawn)
-        Brain.genNormalMatrix(self.canvasDrawn)
+        print(visualizeMatrix(genNormalMatrix(normalizePoints(self.canvasDrawn))))
         self.canvas.delete("all")        #Clear all graphics from canvas
         self.canvasDrawn.clear()         #Clear the recorded data
