@@ -115,6 +115,11 @@ class Brain:
         
         # Compare input vector with each trained model
         for label, modelVector in Brain.model.items():
+            # Check if model has been trained (has non-zero data)
+            hasTrainingData = any(value != 0.0 for value in modelVector)
+            if not hasTrainingData:
+                continue  # Skip untrained models
+                
             # Calculate Euclidean distance between input and model vector
             distance = 0
             for i in range(len(vector)):
@@ -126,5 +131,11 @@ class Brain:
             if distance < lowestDistance:
                 lowestDistance = distance
                 bestMatch = label
+        
+        # Check if the best match is within the confidence threshold
+        # print(lowestDistance)
+        # confidenceThreshold=3
+        # if lowestDistance > confidenceThreshold:
+        #     return "uncertain"
         
         return bestMatch if bestMatch else "unknown"
