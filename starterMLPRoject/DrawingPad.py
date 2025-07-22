@@ -5,13 +5,43 @@ import tkinter as tk
 normalizePoints = Brain.normalizePoints
 genNormalMatrix = Brain.genNormalMatrix
 visualizeMatrix = Brain.visualizeMatrix
+predictShape = Brain.predictShape
 # - - - - - - - - - - - - - - - - - - - -
 
 class DrawingPad:
-    def __init__(self,app):
+    def __init__(self,app,mode="learn"):
         self.drawSize = 10              # Size of the drawn dot
         self.canvasSize = [400, 300]    # Store canvas size
         self.canvasDrawn = []
+        self.mode = mode                # Store the mode
+        
+        # Add label input for learning mode
+        if mode == "learn":
+            # Create frame for label input
+            label_frame = tk.Frame(app)
+            label_frame.pack(pady=5)
+            
+            # Add label text and entry
+            tk.Label(label_frame, text="Label:").pack(side=tk.LEFT)
+            self.label_entry = tk.Entry(label_frame, width=20)
+            self.label_entry.pack(side=tk.LEFT, padx=5)
+            self.label_entry.insert(0, "triangle")  # Default value
+        
+        # Position canvas based on mode
+        if mode == "predict":
+            # Create a spacer frame to push the canvas down
+            spacer = tk.Frame(app, height=100)  # Height of learn canvas + some padding
+            spacer.pack()
+            
+            # Add prediction label for predict mode
+            prediction_frame = tk.Frame(app)
+            prediction_frame.pack(pady=5)
+            
+            tk.Label(prediction_frame, text="Prediction:").pack(side=tk.LEFT)
+            self.prediction_label = tk.Label(prediction_frame, text="Draw something...", 
+                                            bg="lightgray", width=20, relief="sunken")
+            self.prediction_label.pack(side=tk.LEFT, padx=5)
+            
         self.canvas = tk.Canvas(        # Create canvas
             app, 
             width=self.canvasSize[0], 
@@ -34,6 +64,17 @@ class DrawingPad:
 
     #Method for clearing the canvas
     def clear_canvas(self, event):
-        print(visualizeMatrix(genNormalMatrix(normalizePoints(self.canvasDrawn))))
+        normalMatrix = genNormalMatrix(normalizePoints(self.canvasDrawn))
+        inputVector = Brain.flattenMatrix(normalMatrix)
+        
+        # Use label from entry if in learn mode, otherwise predict
+        if self.mode == "learn":
+            label = self.label_entry.get().strip()
+            Brain.trainModel(label, inputVector)
+        elif self.mode == "predict":
+            prediction = predictShape(inputVector)
+            self.prediction_label.config(text=prediction)
+        
+        print(visualizeMatrix(normalMatrix))
         self.canvas.delete("all")        #Clear all graphics from canvas
         self.canvasDrawn.clear()         #Clear the recorded data

@@ -1,9 +1,20 @@
 #Brain class to handle all ML related tasks
-# 1 > Normalize points
-# 2 > Transmute normal coords into static length matrix
+# 1 > Normalize points for variable canvas sizes/drawings
+# 2 > Transmute normal coords into static length matrix for ML input
+# 3 > Flatten matrix to 1D List for ML input
+# 4 > Train ML model with flattened matrix inputs
 
+res = 10
+vectorLength = res * res
 
 class Brain:
+    
+    model = {
+        "triangle": [0.0] * vectorLength,  # 10x10 resolution → 100-element flat vector
+        "circle":   [0.0] * vectorLength,
+        "square":   [0.0] * vectorLength
+    }
+
 
     #Method to convert input points to *scaled* coordinates AKA normalized data ready for ML
     def normalizePoints(points):
@@ -42,7 +53,7 @@ class Brain:
     # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
 
     #Method to convert normalized points to a fixed length matrix
-    def genNormalMatrix(normalizedPoints, res=10):
+    def genNormalMatrix(normalizedPoints):
         # Step 1 : Create a matrix of zeros
         matrix = [[0 for _ in range(res)] for _ in range(res)]
         # Step 2 : Fill the matrix with normalized points
@@ -75,5 +86,45 @@ class Brain:
         for row in matrix:
             for cell in row:
                 flatVector.append(cell)
-                
+
         return flatVector
+    
+    # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+    #Method to train the ML model with the flattened matrix inputs
+    def trainModel(label, vector, learningRate=.1):
+        #Obtain current model vector for the label, create if doesn't exist
+        MLLabel = Brain.model.get(label)
+        if MLLabel is None:
+            # Create new model entry with zeros if label doesn't exist
+            Brain.model[label] = [0.0] * vectorLength
+            MLLabel = Brain.model[label]
+            
+        # Update the model vector with the new vector
+        for i in range(len(MLLabel)):
+            modelInputDifference = vector[i] - MLLabel[i]           # Calculate the difference
+            learningOffset = learningRate * modelInputDifference    # Get the offset for the model
+            MLLabel[i] += learningOffset                            # Teach the model.
+    
+    # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+    
+    #Method to predict what shape the input vector represents
+    def predictShape(vector):
+        bestMatch = None
+        lowestDistance = float('inf')
+        
+        # Compare input vector with each trained model
+        for label, modelVector in Brain.model.items():
+            # Calculate Euclidean distance between input and model vector
+            distance = 0
+            for i in range(len(vector)):
+                difference = vector[i] - modelVector[i]
+                distance += difference * difference
+            distance = distance ** 0.5  # Square root for Euclidean distance
+            
+            # Keep track of the closest match
+            if distance < lowestDistance:
+                lowestDistance = distance
+                bestMatch = label
+        
+        return bestMatch if bestMatch else "unknown"
