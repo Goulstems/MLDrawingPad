@@ -3,6 +3,8 @@
 # 2 > Transmute normal coords into static length matrix for ML input
 # 3 > Flatten matrix to 1D List for ML input
 # 4 > Train ML model with flattened matrix inputs
+# 5 > TODO: Predict shape from input vector
+# 6 > TODO: persistent model storage
 
 res = 10
 vectorLength = res * res
